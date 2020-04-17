@@ -1,20 +1,24 @@
 cmake_minimum_required(VERSION 3.0)
 
-# The plugin name
-set(lib_base_name moduleHttpBeast)
+set(lib_base_name BookFiler-Module-Http-Beast)
+project(${lib_base_name} VERSION 1.0.0 LANGUAGES CXX)
+
+# Configurable Options
+OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
+OPTION(BUILD_STATIC_LIBS "Build static libraries" ON)
 
 find_package(Boost 1.56 REQUIRED COMPONENTS
              system filesystem)
 
 # Set up source files
 set(SOURCES
-  Module.cpp
+  src/Module.cpp
 )
 
 set(HEADERS
-  Module.hpp
-  Interface.hpp
-  core/config.hpp
+  src/Module.hpp
+  src/Interface.hpp
+  src/core/config.hpp
 )
 
 set(SHARED_COMPILE_DEFINITIONS
@@ -42,8 +46,6 @@ if(WIN32)
         gcc
         uuid
 
-        windowscodecs
-        opengl32
         gdi32
         comdlg32
         oleaut32
@@ -143,11 +145,11 @@ if(BUILD_STATIC_LIBS)
 endif()
 
 # Post build
-if(BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS AND PARENT_RELEASE_DIR)
     add_custom_command(TARGET ${lib_shared_name} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/modules/")
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${PARENT_RELEASE_DIR}/modules/")
     add_custom_command(TARGET ${lib_shared_name} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${lib_shared_name}> "${CMAKE_BINARY_DIR}/modules/")
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${lib_shared_name}> "${PARENT_RELEASE_DIR}/modules/")
 endif(BUILD_SHARED_LIBS)
 
 # Installation
@@ -172,5 +174,4 @@ install(FILES ${HEADERS}
   DESTINATION "${CMAKE_INSTALL_PREFIX}/${BIN_NAME}/headers"
 COMPONENT Headers)
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${lib_name}_Readme.txt" DESTINATION "${CMAKE_INSTALL_PREFIX}/${BIN_NAME}/doc/")
 install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "${CMAKE_INSTALL_PREFIX}/${BIN_NAME}/doc/" RENAME "${lib_name}_LICENSE.txt" )
